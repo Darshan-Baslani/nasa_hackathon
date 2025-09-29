@@ -8,12 +8,12 @@ class AQI(BaseModel):
     latitude: float
     longitude: float
 
-@router.get("/aqi")
+@router.post("/aqi")
 async def get_aqi(request: AQI):
     aqi = await calculate_aqi(request.latitude, request.longitude)
     return {"aqi": aqi}
 
-@router.get("/forecast-aqi")
+@router.post("/forecast-aqi")
 async def get_forecast_aqi(request: AQI):
     forecast = await forecast_aqi(request.latitude, request.longitude)
     return {"forecast": forecast}
