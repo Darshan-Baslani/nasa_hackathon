@@ -2,6 +2,10 @@ import httpx
 import json
 from dotenv import load_dotenv
 import os
+import asyncio
+
+from utils.preprocess import get_full_aqi, get_cities
+from db import mongo
 
 load_dotenv()
 
@@ -45,3 +49,14 @@ async def forecast_aqi(latitude: float, longitude: float):
 
     aqi = data["data"]["forecast"]
     return aqi
+
+async def bulk_aqi():
+    cities: list[dict] = await get_cities()
+    results = []
+    async with httpx.AsyncClient() as client:
+        for city in cities:
+            results.append(get_full_aqi(client, city['lat'], city['lng']))
+        results = await asyncio.gather(*results)
+    await mongo.insert_aqi(results)
+    print(results[0])
+
