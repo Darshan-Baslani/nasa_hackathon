@@ -5,3 +5,4 @@ python-dotenv
 pydantic
 pymongo[srv]
 fastapi-mail
+email-validator

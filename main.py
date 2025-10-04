@@ -1,6 +1,7 @@
+from sys import prefix
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import aqi
+from routers import aqi, mail, newsletter
 
 app = FastAPI()
 
@@ -15,6 +16,8 @@ app.add_middleware(
 
 
 app.include_router(aqi.router, prefix="/api/v1")
+app.include_router(mail.router, prefix="/api/v1")
+app.include_router(newsletter.router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():

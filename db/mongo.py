@@ -2,6 +2,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from dotenv import load_dotenv
 import os
+from datetime import datetime
 
 load_dotenv()
 
@@ -27,8 +28,22 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 motor_client = AsyncIOMotorClient(db_uri, server_api=ServerApi('1'))
 db = motor_client['nasa']
-collection = db['nasa_bulk']
+bulk_collection = db['nasa_bulk']
+newsletter_collection = db['newsletter']
+
 
 async def insert_aqi(aqi: list[dict]):
-    await collection.delete_many({})  # remove all old data
-    await collection.insert_many(aqi)  # insert new data
+    await bulk_collection.delete_many({})  # remove all old data
+    await bulk_collection.insert_many(aqi)  # insert new data
+
+async def insert_newsletter_user(email: str, lat: float, lng: float):
+    await newsletter_collection.insert_one({"email": email, "created_at": datetime.now(), "lat":lat, "lng":lng})
+
+async def update_newsletter_user(email: str, lat: float, lng: float):
+    await newsletter_collection.update_one({"email": email}, {"$set": {"lat": lat, "lng": lng}})
+
+# async def get_newsletter_users():
+#     return await newsletter_collection.find({}).to_list(length=None)
+
+# async def delete_newsletter_user(email: str):
+#     await newsletter_collection.delete_one({"email": email}) 

@@ -15,7 +15,7 @@ class EmailSchema(BaseModel):
 conf = ConnectionConfig(
     MAIL_USERNAME=os.getenv("MAIL_USERNAME"),
     MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
-    MAIL_FROM=EmailStr(os.getenv("MAIL_FROM")),
+    MAIL_FROM=os.getenv("MAIL_FROM"),
     MAIL_PORT=int(os.getenv("MAIL_PORT", 587)),
     MAIL_SERVER=os.getenv("MAIL_SERVER"),
     MAIL_STARTTLS=True,
@@ -28,7 +28,7 @@ fm = FastMail(conf)
 
 router = APIRouter()
 
-@router.post("/send-email/")
+@router.post("/send-email")
 async def send_email(email: EmailSchema, background_tasks: BackgroundTasks):
     message = MessageSchema(
         subject=email.subject,
