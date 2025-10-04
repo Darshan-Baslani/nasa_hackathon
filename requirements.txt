@@ -6,3 +6,6 @@ pydantic
 pymongo[srv]
 fastapi-mail
 email-validator
+pandas
+motor
+
