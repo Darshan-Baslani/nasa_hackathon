@@ -8,4 +8,4 @@ fastapi-mail
 email-validator
 pandas
 motor
-
+apscheduler

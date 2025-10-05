@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from controllers.aqi import calculate_aqi, forecast_aqi
@@ -26,3 +27,7 @@ async def get_bulk_aqi(background_tasks: BackgroundTasks):
         return {"message": f"Bulk AQI job started"}
     except Exception as e:
         raise HTTPException(500, f"Failed to start job: {str(e)}")
+
+def schedule_bulk_aqi():
+    print("cron job for bulk aqi started")
+    asyncio.run(bulk_aqi())

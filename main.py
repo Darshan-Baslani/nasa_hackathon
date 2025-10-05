@@ -2,8 +2,10 @@ from sys import prefix
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import aqi, mail, newsletter
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = FastAPI()
+scheduler = BackgroundScheduler()
 
 # Enable CORS
 app.add_middleware(
@@ -18,6 +20,22 @@ app.add_middleware(
 app.include_router(aqi.router, prefix="/api/v1")
 app.include_router(mail.router, prefix="/api/v1")
 app.include_router(newsletter.router, prefix="/api/v1")
+
+@app.on_event("startup")
+def start_scheduler():
+    scheduler.add_job(
+        aqi.schedule_bulk_aqi,
+        "cron",
+        minute="*"
+    )
+    if not scheduler.running:
+        scheduler.start()
+        print("✅ Scheduler started")
+
+@app.on_event("shutdown")
+def stop_scheduler():
+    scheduler.shutdown()
+    print("🛑 Scheduler stopped")
 
 @app.get("/")
 def read_root():
