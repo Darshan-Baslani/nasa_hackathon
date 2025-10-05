@@ -16,6 +16,6 @@ router = APIRouter()
 
 @router.post("/add-user-to-newsletter")
 async def newsletter(request: Newsletter, background_tasks: BackgroundTasks):
-    background_tasks.add_task(mongo.insert_newsletter_user, request.email, request.lat, request.lng)
     background_tasks.add_task(send_email_direct, request.email)
+    background_tasks.add_task(mongo.insert_newsletter_user, request.email, request.lat, request.lng)
     return {"message": "Newsletter user added"}
