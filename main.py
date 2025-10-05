@@ -26,7 +26,7 @@ def start_scheduler():
     scheduler.add_job(
         aqi.schedule_bulk_aqi,
         "cron",
-        minute="*"
+        hour="*"
     )
     if not scheduler.running:
         scheduler.start()

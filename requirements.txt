@@ -9,3 +9,5 @@ email-validator
 pandas
 motor
 apscheduler
+uuid
+csv

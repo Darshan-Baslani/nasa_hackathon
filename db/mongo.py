@@ -1,49 +1,44 @@
-from pymongo.mongo_client import MongoClient
-from pymongo.server_api import ServerApi
-from dotenv import load_dotenv
 import os
-from datetime import datetime
+from typing import Optional
+
+from dotenv import load_dotenv
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.server_api import ServerApi
 
 load_dotenv()
 
-db_uri = os.getenv("MONGO_URI")
+MONGO_URI = os.getenv("MONGO_URI")
+DB_NAME = os.getenv("MONGO_DB_NAME", "nasa")
+BULK_COLLECTION = os.getenv("MONGO_BULK_COLLECTION", "nasa_bulk")
+NEWSLETTER_COLLECTION = os.getenv("MONGO_NEWSLETTER_COLLECTION", "newsletter")
 
-# client = MongoClient(db_uri, server_api=ServerApi('1'))
-
-# db = client['nasa']
-# collection = db['nasa_bulk']
-
-# try:
-#     client.admin.command('ping')
-#     print("Pinged your deployment. You successfully connected to MongoDB!")
-# except Exception as e:
-#     print(e)
-
-# async def insert_aqi(aqi: list[dict]):
-#     result = collection.insert_many(aqi) 
-#     print(f"Inserted IDs: {result.inserted_ids}")
+_client: Optional[AsyncIOMotorClient] = None
 
 
-from motor.motor_asyncio import AsyncIOMotorClient
+def _get_client() -> AsyncIOMotorClient:
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGO_URI, server_api=ServerApi("1"))
+    return _client
 
-motor_client = AsyncIOMotorClient(db_uri, server_api=ServerApi('1'))
-db = motor_client['nasa']
-bulk_collection = db['nasa_bulk']
-newsletter_collection = db['newsletter']
+
+def get_database():
+    return _get_client()[DB_NAME]
+
+
+def get_collection(name: str = BULK_COLLECTION):
+    return get_database()[name]
 
 
 async def insert_aqi(aqi: list[dict]):
-    await bulk_collection.delete_many({})  # remove all old data
-    await bulk_collection.insert_many(aqi)  # insert new data
+    """Replace the nasa_bulk collection contents with fresh AQI data."""
+    collection = get_collection()
+    await collection.delete_many({})
+    if aqi:
+        await collection.insert_many(aqi)
+
 
 async def insert_newsletter_user(email: str, lat: float, lng: float):
-    await newsletter_collection.insert_one({"email": email, "created_at": datetime.now(), "lat":lat, "lng":lng})
-
-async def update_newsletter_user(email: str, lat: float, lng: float):
-    await newsletter_collection.update_one({"email": email}, {"$set": {"lat": lat, "lng": lng}})
-
-# async def get_newsletter_users():
-#     return await newsletter_collection.find({}).to_list(length=None)
-
-# async def delete_newsletter_user(email: str):
-#     await newsletter_collection.delete_one({"email": email}) 
+    """Insert a new user into the newsletter collection."""
+    collection = get_collection(NEWSLETTER_COLLECTION)
+    await collection.insert_one({"email": email, "lat": lat, "lng": lng})

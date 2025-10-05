@@ -5,6 +5,8 @@ from typing import List
 from dotenv import load_dotenv
 import os
 
+from controllers.mail import send_email_direct
+
 load_dotenv()
 
 class EmailSchema(BaseModel):
